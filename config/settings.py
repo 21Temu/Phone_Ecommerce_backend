@@ -123,4 +123,5 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-CHAPA_SECRET_KEY = "CHAPA_TEST_PRIV_y3G3rwNNPman0yB5ey783eslDA8ZjLZcejCaPiOb" 
+CHAPA_SECRET_KEY = config("CHAPA_SECRET_KEY", default="") 
+GROQ_API_KEY = config("GROQ_API_KEY", default="")
