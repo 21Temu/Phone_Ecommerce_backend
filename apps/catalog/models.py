@@ -1,3 +1,6 @@
+from django.conf import settings
+from PIL import Image
+import io
 from django.db import models
 from django.utils.text import slugify
 from apps.common.models import TimeStampedModel
@@ -107,3 +110,32 @@ class PhoneVariant(TimeStampedModel):
     @property
     def in_stock(self):
         return self.stock > 0
+
+class PhoneImage(TimeStampedModel):
+    phone = models.ForeignKey(Phone, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="phones/")
+    is_primary = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    
+
+    class Meta:
+        ordering = ["-is_primary", "order"]
+
+    # THIS MUST BE OUTSIDE THE META CLASS
+    def save(self, *args, **kwargs):
+        if self.image and not self.embedding:
+            try:
+                self.image.seek(0)
+                img_bytes = self.image.read()
+                
+                co = cohere.Client(api_key=settings.COHERE_API_KEY)
+                response = co.embed(
+                    images=[img_bytes],
+                    model="embed-v4.0",
+                    input_type="image"
+                )
+                self.embedding = response.embeddings[0]
+            except Exception as e:
+                print("Failed to generate embedding:", e)
+        
+        super().save(*args, **kwargs)

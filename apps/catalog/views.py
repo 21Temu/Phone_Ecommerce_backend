@@ -1,3 +1,8 @@
+import cohere
+import numpy as np
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import PhoneImage
+
 import json
 import re
 import traceback
@@ -130,4 +135,48 @@ class AIShoppingAssistantView(APIView):
             print("AI ASSISTANT CRASHED!")
             print(traceback.format_exc())
             print("="*50 + "\n")
+            return Response({"error": str(e)}, status=500)
+
+class AIImageSearchView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file_obj = request.FILES.get("image")
+        if not file_obj:
+            return Response({"error": "No image provided"}, status=400)
+
+        try:
+            # 1. Initialize Cohere
+            co = cohere.Client(api_key=settings.COHERE_API_KEY)
+            
+            # 2. Get the vector for the uploaded image
+            response = co.embed(
+                images=[file_obj.read()],
+                model="embed-v4.0",
+                input_type="image"
+            )
+            query_vector = response.embeddings[0]
+
+            # 3. Find the closest images in Postgres using Cosine Distance (pgvector)
+            # 'embedding__cosine_distance' is provided by pgvector
+            similar_images = PhoneImage.objects.filter(
+                embedding__isnull=False
+            ).order_by(models.F("embedding").cosine_distance(query_vector))[:4]
+
+            # 4. Return the associated phones
+            results = []
+            seen_phone_ids = set()
+            for img in similar_images:
+                if img.phone.id not in seen_phone_ids:
+                    seen_phone_ids.add(img.phone.id)
+                    results.append({
+                        "id": img.phone.id,
+                        "slug": img.phone.slug,
+                        "name": f"{img.phone.brand.name} {img.phone.name}",
+                        "image": img.image.url if img.image else None,
+                    })
+
+            return Response({"results": results})
+
+        except Exception as e:
             return Response({"error": str(e)}, status=500)

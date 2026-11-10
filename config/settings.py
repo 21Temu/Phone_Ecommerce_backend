@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.orders",
     "apps.common",
     "django_filters",
+    "pgvector",
 ]
 
 
@@ -69,6 +70,9 @@ DATABASES = {
         "PASSWORD": config("DB_PASSWORD"),
         "HOST": config("DB_HOST", default="localhost"),
         "PORT": config("DB_PORT", default="5432"),
+        "OPTIONS": {
+            "options": "-c search_path=public",
+        },
     }
 }
 
@@ -125,3 +129,4 @@ SIMPLE_JWT = {
 
 CHAPA_SECRET_KEY = config("CHAPA_SECRET_KEY", default="") 
 GROQ_API_KEY = config("GROQ_API_KEY", default="")
+COHERE_API_KEY = config("COHERE_API_KEY", default="")
