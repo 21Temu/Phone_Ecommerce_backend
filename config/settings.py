@@ -101,7 +101,8 @@ CORS_ALLOW_CREDENTIALS = True
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # "rest_framework_simplejwt.authentication.JWTAuthentication",
+         'apps.common.authentication.SafeJWTAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.AllowAny",
@@ -121,3 +122,5 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+CHAPA_SECRET_KEY = "CHAPA_TEST_PRIV_y3G3rwNNPman0yB5ey783eslDA8ZjLZcejCaPiOb" 

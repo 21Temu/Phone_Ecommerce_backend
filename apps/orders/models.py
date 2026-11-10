@@ -20,6 +20,11 @@ class Order(TimeStampedModel):
         ("delivered", "Delivered"),
         ("cancelled", "Cancelled"),
     )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=(("offline", "Offline Transfer"), ("chapa", "Chapa Online")),
+        default="offline",
+    )
 
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
     user = models.ForeignKey(

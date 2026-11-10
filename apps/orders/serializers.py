@@ -44,6 +44,7 @@ class OrderCreateSerializer(serializers.Serializer):
     shipping_address = serializers.CharField()
     note = serializers.CharField(required=False, allow_blank=True)
     items = OrderItemInputSerializer(many=True)
+    payment_method = serializers.CharField(required=False, default="offline")
 
     def validate_items(self, items):
         if not items:
